@@ -10,30 +10,24 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name = "tb_categorias")
+@Table(name = "tb_categoria")
 public class Categoria {
 
 	@Id
-	@GeneratedValue(strategy= GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
-	@NotNull(message = "Tipo é obrigatório!")
-	@Size(min = 5)
+
+	@NotBlank(message = "O campo tipo deve ser preenchido.")
 	private String tipo;
-	
+
 	@OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL)
 	@JsonIgnoreProperties("categoria")
 	private List<Produto> produto;
-	
-	@NotBlank(message="O atributo é obrigatório.")
-	private String nome;
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -50,12 +44,12 @@ public class Categoria {
 		this.tipo = tipo;
 	}
 
-	public List<Produto> getProduto() {
+	public List<Produto> getProdutos() {
 		return produto;
 	}
 
-	public void setProduto(List<Produto> produto) {
+	public void setCategoria(List<Produto> produto) {
 		this.produto = produto;
 	}
-	
+
 }

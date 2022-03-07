@@ -22,76 +22,69 @@ import com.generation.lojadegames.model.Produto;
 import com.generation.lojadegames.repository.CategoriaRepository;
 import com.generation.lojadegames.repository.ProdutoRepository;
 
-@RestController	
+@RestController
 @RequestMapping("/produtos")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+@CrossOrigin(origins="*", allowedHeaders="*")
 public class ProdutoController {
-	
+
 	@Autowired
 	private ProdutoRepository produtoRepository;
 	
 	@Autowired
 	private CategoriaRepository categoriaRepository;
-
-	@GetMapping
+	
+	@GetMapping("/all")
 	public ResponseEntity<List<Produto>> getAll(){
 		return ResponseEntity.ok(produtoRepository.findAll());
 	}
+	
 	@GetMapping("/{id}")
 	public ResponseEntity<Produto> getById(@PathVariable Long id){
 		return produtoRepository.findById(id)
-			.map(resp-> ResponseEntity.ok(resp))
-			.orElse(ResponseEntity.notFound().build());
-	}
-	
-	@GetMapping("/nome/{nome}")
-	public ResponseEntity<List<Produto>> getByNome(@PathVariable String nome){
-		return ResponseEntity.ok(produtoRepository.findAllByNomeContainingIgnoreCase(nome));
-	}	
-	
-	@PostMapping
-	public ResponseEntity<Produto> postProduto(@Valid @RequestBody Produto produto){
-		return categoriaRepository.findById(produto.getCategoria().getId())
-				.map(resposta -> {
-					return ResponseEntity.status(HttpStatus.CREATED).body(produtoRepository.save(produto));
-				})
-				.orElse(ResponseEntity.badRequest().build());
-	}
-	
-	@PutMapping
-	public ResponseEntity<Produto> putProduto(@Valid @RequestBody Produto produto) {
-					
-		if (produtoRepository.existsById(produto.getId())){
-
-			return categoriaRepository.findById(produto.getCategoria().getId())
-					.map(resposta -> {
-						return ResponseEntity.status(HttpStatus.OK).body(produtoRepository.save(produto));
-					})
-					.orElse(ResponseEntity.badRequest().build());
-		}		
-		
-		return ResponseEntity.notFound().build();
-
-	}
-
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteProduto(@PathVariable Long id) {
-		
-		return produtoRepository.findById(id)
-				.map(resposta -> {
-					produtoRepository.deleteById(id);
-					return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-				})
+				.map(resposta -> ResponseEntity.ok(resposta))
 				.orElse(ResponseEntity.notFound().build());
 	}
 	
+	@GetMapping("/nome/{nome}")
+	public ResponseEntity<List<Produto>> getByNome (@PathVariable String nome) {
+		return ResponseEntity.ok(produtoRepository.findAllByNomeContainingIgnoreCase(nome));
+	}
+	
+	@PostMapping
+	public ResponseEntity<Produto> postProdutos(@Valid @RequestBody Produto produto){
+		if (categoriaRepository.existsById(produto.getCategoria().getId())) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(produtoRepository.save(produto));
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+	@PutMapping
+	public ResponseEntity<Produto> putProdutos(@Valid @RequestBody Produto produto){
+		if (categoriaRepository.existsById(produto.getCategoria().getId())) {
+			return produtoRepository.findById(produto.getId())
+					.map(resposta -> ResponseEntity.status(HttpStatus.OK).body(produtoRepository.save(produto)))
+					.orElse(ResponseEntity.notFound().build());
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Object> deleteProdutos(@PathVariable Long id) {
+		return produtoRepository.findById(id).map(resposta -> {
+			produtoRepository.deleteById(id); return ResponseEntity.noContent().build();
+		}) .orElse(ResponseEntity.notFound().build());
+	}
+	
 	@GetMapping("/preco_maior/{preco}")
-	public ResponseEntity<List<Produto>> getPrecoMaiorQue(@PathVariable BigDecimal preco){ 
+	public ResponseEntity<List<Produto>> getByPrecoMaior (@PathVariable BigDecimal preco) {
 		return ResponseEntity.ok(produtoRepository.findByPrecoGreaterThanOrderByPreco(preco));
 	}
 	
 	@GetMapping("/preco_menor/{preco}")
-	public ResponseEntity<List<Produto>> getPrecoMenorQue(@PathVariable BigDecimal preco){ 
+	public ResponseEntity<List<Produto>> getByPrecoMenor (@PathVariable BigDecimal preco) {
 		return ResponseEntity.ok(produtoRepository.findByPrecoLessThanOrderByPrecoDesc(preco));
 	}
+	
 }
